@@ -1,0 +1,18 @@
+version: "3.8"
+
+services:
+  ganache:
+    image: trufflesuite/ganache
+    container_name: ganache
+    ports:
+      - "8545:8545"
+    command: >
+      --mnemonic "test test test test test test test test test test test junk"
+      --miner.blockTime 0
+  timer:
+    build: ./timer
+    container_name: timer
+    depends_on:
+      - ganache
+    environment:
+      - RPC_URL=${RPC_URL}
