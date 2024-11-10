@@ -1,7 +1,13 @@
-import { createTestClient, http, publicActions, walletActions } from "viem";
+import {
+  createTestClient,
+  http,
+  parseEther,
+  publicActions,
+  walletActions,
+} from "viem";
 import { privateKeyToAccount } from "viem/accounts";
 import { localhost } from "viem/chains";
-import { sankakuImplementationAddress } from "./addresses";
+import { sankakuImplementationAddress, usdcAddress } from "./addresses";
 
 const executorAccount = privateKeyToAccount(
   process.env.EXECUTOR_PRIVATE_KEY as `0x${string}`
@@ -73,24 +79,14 @@ async function deployRecurringExecutor() {
     ],
     args: [
       deployerClient.account.address,
-      [0, 1, 2, 0, 1, 2],
+      [0, 1, 2],
       [
         executorAccount.address,
         executorAccount.address,
         executorAccount.address,
-        executorAccount.address,
-        executorAccount.address,
-        executorAccount.address,
       ],
-      [
-        executorAccount.address,
-        executorAccount.address,
-        executorAccount.address,
-        executorAccount.address,
-        executorAccount.address,
-        executorAccount.address,
-      ],
-      [5990000n, 11990000n, 49990000n, 11990000n, 29990000n, 149990000n],
+      [usdcAddress, usdcAddress, usdcAddress],
+      [parseEther("0.01"), parseEther("0.01"), parseEther("0.01")],
     ],
   });
   await deployerClient.waitForTransactionReceipt({ hash });
