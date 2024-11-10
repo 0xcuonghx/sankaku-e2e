@@ -9,6 +9,16 @@ services:
     command: >
       --mnemonic "test test test test test test test test test test test junk"
       --miner.blockTime 0
+  txs:
+    build: ./txs
+    container_name: txs
+    depends_on:
+      - ganache
+    environment:
+      - RPC_URL=${RPC_URL}
+      - DEPLOYER_PRIVATE_KEY=${DEPLOYER_PRIVATE_KEY}
+      - ALICE_PRIVATE_KEY=${ALICE_PRIVATE_KEY}
+      - USDC_ADDRESS=${USDC_ADDRESS}
   timer:
     build: ./timer
     container_name: timer
