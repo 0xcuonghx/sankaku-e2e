@@ -18,7 +18,7 @@ import {
   sankakuFactoryAddress,
   usdcAddress,
 } from "./addresses";
-import { delay } from "./utils";
+import { delay, increase, nextCharge, today } from "./utils";
 
 export const aliceClient = createTestClient({
   mode: "ganache",
@@ -53,11 +53,13 @@ export async function sendTxs() {
   await sendERC20Txs();
   await createAliceSmartWallet();
   await installRecurringExecutor(1n);
-  await delay(10000);
+  await delay(60000);
+  await executeRecurringExecutor();
   await uninstallRecurringExecutor();
 }
 
 async function sendERC20Txs() {
+  console.log(`Mint USDC to Alice`);
   let hash = await aliceClient.sendTransaction({
     to: usdcAddress,
     data: encodeFunctionData({
@@ -68,6 +70,7 @@ async function sendERC20Txs() {
   });
   await aliceClient.waitForTransactionReceipt({ hash });
 
+  console.log(`Transfer USDC to Bob`);
   hash = await aliceClient.sendTransaction({
     to: usdcAddress,
     data: encodeFunctionData({
@@ -78,6 +81,7 @@ async function sendERC20Txs() {
   });
   await aliceClient.waitForTransactionReceipt({ hash });
 
+  console.log(`Transfer USDC to Smart Account`);
   const aliceSmartWalletAddress = await getSmartWalletAddress(
     aliceClient.account.address
   );
@@ -93,6 +97,7 @@ async function sendERC20Txs() {
 }
 
 async function createAliceSmartWallet() {
+  console.log(`Create Alice Smart Wallet`);
   const hash = await aliceClient.writeContract({
     abi: parseAbi([
       "function createAccount(address owner, bytes32 salt) external",
@@ -105,6 +110,7 @@ async function createAliceSmartWallet() {
 }
 
 async function installRecurringExecutor(planId: bigint) {
+  console.log(`Install Recurring Executor`);
   const aliceSmartWalletAddress = await getSmartWalletAddress(
     aliceClient.account.address
   );
@@ -121,23 +127,33 @@ async function installRecurringExecutor(planId: bigint) {
     ],
   });
   await aliceClient.waitForTransactionReceipt({ hash });
+  console.log(`Next charge at ${nextCharge()}`);
 }
 
 async function executeRecurringExecutor() {
-  const aliceSmartWalletAddress = await getSmartWalletAddress(
-    aliceClient.account.address
-  );
+  let attempts = 0;
 
-  const hash = await aliceClient.writeContract({
-    abi: parseAbi(["function execute(address smartAccount) external"]),
-    address: recurringExecutorAddress,
-    functionName: "execute",
-    args: [aliceSmartWalletAddress],
-  });
-  await aliceClient.waitForTransactionReceipt({ hash });
+  while (attempts < 5) {
+    increase(24 * 60 * 60 * 7);
+    console.log(`Charging ${today()}`);
+    const aliceSmartWalletAddress = await getSmartWalletAddress(
+      aliceClient.account.address
+    );
+
+    const hash = await aliceClient.writeContract({
+      abi: parseAbi(["function execute(address smartAccount) external"]),
+      address: recurringExecutorAddress,
+      functionName: "execute",
+      args: [aliceSmartWalletAddress],
+    });
+    await aliceClient.waitForTransactionReceipt({ hash });
+    attempts++;
+    console.log(`Next charge at ${nextCharge()}`);
+  }
 }
 
 async function uninstallRecurringExecutor() {
+  console.log(`Uninstall Recurring Executor`);
   const aliceSmartWalletAddress = await getSmartWalletAddress(
     aliceClient.account.address
   );

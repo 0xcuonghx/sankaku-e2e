@@ -20,13 +20,6 @@ services:
       - ALICE_PRIVATE_KEY=${ALICE_PRIVATE_KEY}
       - BOB_PRIVATE_KEY=${BOB_PRIVATE_KEY}
       - EXECUTOR_PRIVATE_KEY=${EXECUTOR_PRIVATE_KEY}
-  timer:
-    build: ./timer
-    container_name: timer
-    depends_on:
-      - ganache
-    environment:
-      - RPC_URL=${RPC_URL}
   sankaku-indexer-postgres:
     container_name: sankaku-indexer-postgres
     image: postgres:latest
