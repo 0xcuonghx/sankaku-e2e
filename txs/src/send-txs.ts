@@ -9,6 +9,7 @@ import {
 } from "viem";
 import { privateKeyToAccount } from "viem/accounts";
 import { localhost } from "viem/chains";
+import { usdcAddress } from "./addresses";
 
 export const aliceClient = createTestClient({
   mode: "ganache",
@@ -34,7 +35,7 @@ export async function sendTxs() {
 
 async function sendERC20Txs() {
   let hash = await aliceClient.sendTransaction({
-    to: process.env.USDC_ADDRESS as `0x${string}`,
+    to: usdcAddress,
     data: encodeFunctionData({
       abi: parseAbi(["function mint(address to, uint256 amount) public"]),
       functionName: "mint",
@@ -44,7 +45,7 @@ async function sendERC20Txs() {
   await aliceClient.waitForTransactionReceipt({ hash });
 
   hash = await aliceClient.sendTransaction({
-    to: process.env.USDC_ADDRESS as `0x${string}`,
+    to: usdcAddress,
     data: encodeFunctionData({
       abi: parseAbi(["function transfer(address to, uint256 amount) public"]),
       functionName: "transfer",
