@@ -16,3 +16,33 @@ services:
       - ganache
     environment:
       - RPC_URL=${RPC_URL}
+  sankaku-indexer-postgres:
+    container_name: sankaku-indexer-postgres
+    image: postgres:latest
+    ports:
+      - 5432:5432
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_DB=postgres
+  sankaku-indexer:
+    build: ./sankaku-indexer
+    container_name: sankaku-indexer
+    depends_on:
+      - ganache
+      - sankaku-indexer-postgres
+    environment:
+      - PORT=3000
+      - POSTGRES_URL=postgresql://postgres:postgres@sankaku-indexer-postgres:5432/postgres
+      - RPC_URLS=${RPC_URLS}
+      - EXECUTOR_PRIVATE_KEY=${EXECUTOR_PRIVATE_KEY}
+      - SUPPORTED_CURRENCY_ADDRESSES=${SUPPORTED_CURRENCY_ADDRESSES}
+      - RECURRING_EXECUTOR_ADDRESS=${RECURRING_EXECUTOR_ADDRESS}
+      - BLOCKS_PER_BATCH=${BLOCKS_PER_BATCH}
+      - BLOCK_SCAN_INTERVAL=${BLOCK_SCAN_INTERVAL}
+      - BACKFILL_DELAY_TIME=${BACKFILL_DELAY_TIME}
+      - RETRY_DELAY_TIME=${RETRY_DELAY_TIME}
+      - MAX_RETRY_ATTEMPTS=${MAX_RETRY_ATTEMPTS}
+      - START_BLOCK=${START_BLOCK}
+    ports:
+      - "3000:3000"

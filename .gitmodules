@@ -1,0 +1,3 @@
+[submodule "sankaku-indexer"]
+	path = sankaku-indexer
+	url = git@github.com:0xcuonghx/sankaku-indexer.git
