@@ -50,3 +50,10 @@ services:
       - START_BLOCK=${START_BLOCK}
     ports:
       - "3000:3000"
+  assert:
+    build: ./assert
+    container_name: assert
+    depends_on:
+      - sankaku-indexer
+    environment:
+      - INDEXER_BASE_URL=${INDEXER_BASE_URL}

@@ -53,7 +53,7 @@ export async function sendTxs() {
   await sendERC20Txs();
   await createAliceSmartWallet();
   await installRecurringExecutor(1n);
-  await delay(60000);
+  await delay(30000);
   await executeRecurringExecutor();
   await uninstallRecurringExecutor();
 }
@@ -127,7 +127,7 @@ async function installRecurringExecutor(planId: bigint) {
     ],
   });
   await aliceClient.waitForTransactionReceipt({ hash });
-  console.log(`Next charge at ${nextCharge()}`);
+  console.log(`Next charge at ${await nextCharge()}`);
 }
 
 async function executeRecurringExecutor() {
@@ -135,7 +135,7 @@ async function executeRecurringExecutor() {
 
   while (attempts < 5) {
     increase(24 * 60 * 60 * 7);
-    console.log(`Charging ${today()}`);
+    console.log(`Charging ${await today()}`);
     const aliceSmartWalletAddress = await getSmartWalletAddress(
       aliceClient.account.address
     );
@@ -148,7 +148,7 @@ async function executeRecurringExecutor() {
     });
     await aliceClient.waitForTransactionReceipt({ hash });
     attempts++;
-    console.log(`Next charge at ${nextCharge()}`);
+    console.log(`Next charge at ${await nextCharge()}`);
   }
 }
 
