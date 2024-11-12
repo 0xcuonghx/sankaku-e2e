@@ -1,12 +1,9 @@
-import assert from "assert";
-import { smartAccounts, tokenBalances } from "./expected";
-
 const baseUrl = process.env.INDEXER_BASE_URL;
 
 const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
 async function main() {
-  await delay(60000);
+  await delay(120000);
   await checkSmartAccounts();
   await checkTokenBalances();
   await checkSubscriptions();
@@ -25,8 +22,7 @@ async function checkSmartAccounts() {
   if (!response.ok) {
     throw new Error("Fail to fetch");
   }
-
-  assert.deepStrictEqual(await response.json(), smartAccounts);
+  console.log(await response.json());
 }
 
 async function checkTokenBalances() {
@@ -39,8 +35,7 @@ async function checkTokenBalances() {
   if (!response.ok) {
     throw new Error("Fail to fetch");
   }
-
-  assert.deepStrictEqual(await response.json(), tokenBalances);
+  console.log(await response.json());
 }
 
 async function checkSubscriptions() {

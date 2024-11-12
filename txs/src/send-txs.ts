@@ -19,6 +19,7 @@ import {
   usdcAddress,
 } from "./addresses";
 import { delay, increase, nextCharge, today } from "./utils";
+import moment from "moment";
 
 export const aliceClient = createTestClient({
   mode: "ganache",
@@ -52,10 +53,9 @@ export const executorClient = createTestClient({
 export async function sendTxs() {
   await sendERC20Txs();
   await createAliceSmartWallet();
-  await installRecurringExecutor(1n);
-  await delay(30000);
-  await executeRecurringExecutor();
-  await uninstallRecurringExecutor();
+  await runWeeklyTxs();
+  await runMonthlyTxs();
+  await runSixMonthsTxs();
 }
 
 async function sendERC20Txs() {
@@ -127,15 +127,19 @@ async function installRecurringExecutor(planId: bigint) {
     ],
   });
   await aliceClient.waitForTransactionReceipt({ hash });
-  console.log(`Next charge at ${await nextCharge()}`);
+  console.log(
+    `Next charge at ${(await nextCharge(planId)).format("YYYY-MM-DD")}`
+  );
 }
 
-async function executeRecurringExecutor() {
+async function executeRecurringExecutor(planId: bigint) {
   let attempts = 0;
 
   while (attempts < 5) {
-    increase(24 * 60 * 60 * 7);
-    console.log(`Charging ${await today()}`);
+    const now = await today();
+    const next = await nextCharge(planId);
+    await increase(next.diff(now, "seconds"));
+    console.log(`Charging ${(await today()).format("YYYY-MM-DD")}`);
     const aliceSmartWalletAddress = await getSmartWalletAddress(
       aliceClient.account.address
     );
@@ -148,7 +152,9 @@ async function executeRecurringExecutor() {
     });
     await aliceClient.waitForTransactionReceipt({ hash });
     attempts++;
-    console.log(`Next charge at ${await nextCharge()}`);
+    console.log(
+      `Next charge at ${(await nextCharge(planId)).format("YYYY-MM-DD")}`
+    );
   }
 }
 
@@ -165,4 +171,31 @@ async function uninstallRecurringExecutor() {
     args: [recurringExecutorAddress],
   });
   await aliceClient.waitForTransactionReceipt({ hash });
+}
+
+async function runWeeklyTxs() {
+  console.log(`Run Weekly Txs`);
+  await installRecurringExecutor(1n);
+  await delay(30000);
+  await executeRecurringExecutor(1n);
+  await uninstallRecurringExecutor();
+  console.log("Done");
+}
+
+async function runMonthlyTxs() {
+  console.log(`Run Monthly Txs`);
+  await installRecurringExecutor(2n);
+  await delay(30000);
+  await executeRecurringExecutor(2n);
+  await uninstallRecurringExecutor();
+  console.log("Done");
+}
+
+async function runSixMonthsTxs() {
+  console.log(`Run Six Months Txs`);
+  await installRecurringExecutor(3n);
+  await delay(30000);
+  await executeRecurringExecutor(3n);
+  await uninstallRecurringExecutor();
+  console.log("Done");
 }
