@@ -23,18 +23,22 @@ services:
   sankaku-indexer-postgres:
     container_name: sankaku-indexer-postgres
     image: postgres:latest
-    ports:
-      - 5432:5432
     environment:
       - POSTGRES_USER=postgres
       - POSTGRES_PASSWORD=postgres
       - POSTGRES_DB=postgres
+  sankaku-indexer-redis:
+    container_name: sankaku-indexer-redis
+    image: redis:latest
+    environment:
+      - REDIS_REPLICATION_MODE=master
   sankaku-indexer:
     build: ./sankaku-indexer
     container_name: sankaku-indexer
     depends_on:
       - ganache
       - sankaku-indexer-postgres
+      - sankaku-indexer-redis
     environment:
       - PORT=3000
       - POSTGRES_URL=postgresql://postgres:postgres@sankaku-indexer-postgres:5432/postgres
@@ -48,8 +52,8 @@ services:
       - RETRY_DELAY_TIME=${RETRY_DELAY_TIME}
       - MAX_RETRY_ATTEMPTS=${MAX_RETRY_ATTEMPTS}
       - START_BLOCK=${START_BLOCK}
-    ports:
-      - "3000:3000"
+      - REDIS_HOST=sankaku-indexer-redis
+      - REDIS_PORT=6379
   assert:
     build: ./assert
     container_name: assert
